@@ -1,0 +1,6 @@
+/* scope */
+void f() { int at = 3; at; at! }
+public int at() -> 0 {
+  f();
+}
+

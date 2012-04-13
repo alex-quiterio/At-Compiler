@@ -1,0 +1,2 @@
+int x = 0; int y = 1; public int at() -> 0 { x!=y==x! 
+}

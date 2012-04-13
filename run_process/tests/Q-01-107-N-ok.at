@@ -1,0 +1,12 @@
+public <real> _main(<real> p) { @ = 1 + p; }
+public int at() -> 0 {
+  <real> p = 0;
+  <real> q = 0;
+  p = #3;
+  p[0] = 3.1;
+  p[1] = 2.1;
+  p[2] = 6.1E1;
+  q = _main(p);
+  q[1]!
+}
+

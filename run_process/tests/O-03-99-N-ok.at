@@ -1,0 +1,3 @@
+real f(real y = 10) -> 9 {}
+public int at() -> 0 { f()! f(2)! }
+

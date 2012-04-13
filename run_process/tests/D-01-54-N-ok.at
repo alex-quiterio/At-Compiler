@@ -1,0 +1,6 @@
+public int at() -> 0 {
+   [0] ? "KO"!
+   [1] ? "elif"!
+   : "OK"!
+}
+

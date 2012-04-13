@@ -1,0 +1,6 @@
+/* duzia */
+use int argc()
+public int at() -> 0 {
+  argc()!
+}
+

@@ -1,0 +1,7 @@
+public int at() -> 0 << {
+  int j = 1;
+  return
+}
+[] { j! }
+>> { "\ndone"!! }
+

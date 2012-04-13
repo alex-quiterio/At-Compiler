@@ -1,0 +1,5 @@
+use int g(int i)
+public int f(int i) -> 9 { [i == 0] ? @ = 0; : @ = g(i-1) + i; }
+public int g(int i) -> 9 { [i == 0] ? @ = 0; : @ = f(i-1) + i; }
+public int at() -> 0 { f(3)! }
+

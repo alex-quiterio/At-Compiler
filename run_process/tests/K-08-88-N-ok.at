@@ -1,0 +1,5 @@
+use int g(int n)
+int f(string s) { s! @ = 10; }
+public int g(int n) { n! @ = 10; }
+public int at() -> 0 { f("ola"); }
+

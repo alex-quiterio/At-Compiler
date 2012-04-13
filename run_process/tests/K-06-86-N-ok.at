@@ -1,0 +1,3 @@
+int f(int x = 3) { x = 5; @ = 1 + x; }
+public int at() -> 0 { f()! }
+

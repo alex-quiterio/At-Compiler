@@ -1,0 +1,6 @@
+public int at() -> 0 {
+  int j = 1;
+  int f() -> 8 { j = 2; };
+  f()! j!
+}
+

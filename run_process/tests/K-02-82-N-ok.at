@@ -1,0 +1,3 @@
+void f(int x) { x! }
+public int at() -> 0 { f(3); }
+

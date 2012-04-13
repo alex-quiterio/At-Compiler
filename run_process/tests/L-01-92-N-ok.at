@@ -1,0 +1,6 @@
+int f(int i) {
+  [i == 0] ? @ = 0; : { @ = @(i-1) + i; return }
+  @ = 9;
+}
+public int at() -> 0 { f(3)! }
+

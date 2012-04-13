@@ -1,0 +1,7 @@
+public int at() -> 0 {
+  int i = 7;
+  int j = 1;
+  int f(int i = 3) -> 8 { j = i + @.i; };
+  f()! j!
+}
+

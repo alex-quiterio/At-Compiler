@@ -1,0 +1,18 @@
+O compilador, escrito em C++, realiza as seguintes etapas de análise para implementar a linguagem:
+
+análise lexical (gerador de analisadores lexicais GNU Flex 2.5.35);
+sintáctica (gerador de analisadores LALR(1) byacc-1.9);
+análise semântica e geração de código (CDK7, RTS2 e extensões); e
+compilação de assembly (ferramenta yasm -- formato de teste: linux/elf32).
+  	
+As bibliotecas CDK e RTS de apoio ao desenvolvimento do projecto são de uso obrigatório:
+
+CDK - "Compiler Development Kit" libcdk7-201204102015.tar.bz2
+RTS - "Run Time System" librts2-201204102015.tar.bz2
+O compilador Compact exemplifica a utilização destas bibliotecas:
+
+Compact compact-201204102015.tar.bz2
+  
+As ferramentas Flex e byacc estão disponíveis para a maioria dos sistemas actuais. No entanto, apesar de o número de versão poder ser o mesmo, o código gerado pode variar e não ser compatível com o ambiente oficial de teste. Recomenda-se apenas a utilização do material fornecido pela disciplina.
+
+O compilador pf2asm permite compilar directamente código Postfix. É também um exemplo (tal como o Compact) de uso do restante material de apoio.Este compilador é de utilização opcional (é independente da realização do projecto), mas pode ser útil para a realização de testes de protótipos de geração de código.

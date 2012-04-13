@@ -1,0 +1,6 @@
+use void f()
+public void f() { int x = 3; x! }
+public int at() -> 0 {
+  f();
+}
+

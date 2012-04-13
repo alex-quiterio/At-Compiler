@@ -1,0 +1,10 @@
+<real> f;
+real d = 4;
+public int at() -> 0 {
+  int i;
+  f = #7;
+  [i = 0; i < 6; i = i + 1] f[i] = d;
+  f[i] = d*d;
+  [int j = 0; j < 7; j = j + 1] f[j]!
+}
+

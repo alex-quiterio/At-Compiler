@@ -1,0 +1,5 @@
+string f() { @ = "ola"; }
+public int at() -> 0 {
+  f()!
+}
+

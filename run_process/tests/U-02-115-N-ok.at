@@ -1,0 +1,9 @@
+public int at() -> 0 << {
+  int m = 0;
+  int x = 0;
+  m = -1;
+}
+[m > 0] { [; x < m; x = x + 1] x!! }
+{ "\nshould be printed!"!! }
+>> { "\ndone"!! }
+

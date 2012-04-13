@@ -1,0 +1,12 @@
+<int> f;
+public int at() -> 0 {
+  int n = 4;
+  <int> f = 0;
+  f = #n;
+  [int i = 0; i < n; i = i + 1] f[i] = 2;
+  [int j = 0; j < n; j = j + 1] f[j]!
+  "\n"!
+  [int k = 0; k < n; k = k + 1] f[k] = 6/f[k];
+  [int l = 0; l < n; l = l + 1] f[l]!
+}
+

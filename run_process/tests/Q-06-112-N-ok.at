@@ -1,0 +1,6 @@
+public real _main(<real> p) { @ = p[0]; }
+public int at() -> 0 {
+  real r = 6.1E1;
+  _main(r?)!
+}
+
