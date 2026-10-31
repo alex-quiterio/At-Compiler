@@ -16,6 +16,7 @@ ROOT="$(dirname "$HERE")"
 AT="${AT:-$ROOT/at}"
 CASES="$HERE/cases"
 EXPECTED="$HERE/expected"
+INPUT="$HERE/input"   # optional NAME.in, fed to the program on stdin
 OUT="$HERE/out"
 
 [ -x "$AT" ] || { echo "compiler not found at $AT (run make first)" >&2; exit 2; }
@@ -38,7 +39,7 @@ for name in "${names[@]}"; do
      "$AT" "$OUT/$name.at" &&
      yasm -felf -o "$obj" "$asm" &&
      ld -m elf_i386 -o "$bin" "$obj" -lrts &&
-     "$bin" > "$OUT/$name.out" &&
+     { if [ -f "$INPUT/$name.in" ]; then "$bin" < "$INPUT/$name.in"; else "$bin" < /dev/null; fi; } > "$OUT/$name.out" &&
      [ "$(tr -d '[:space:]' < "$OUT/$name.out")" = "$(tr -d '[:space:]' < "$EXPECTED/$name.out")" ]
   then
     pass=$((pass + 1))

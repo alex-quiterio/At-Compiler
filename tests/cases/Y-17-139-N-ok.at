@@ -1,0 +1,2 @@
+void f(string s = "hi", real r = 3) { s! r! }
+public int at() -> 0 { f(); f("yo"); f("ok", 0.5); }

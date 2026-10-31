@@ -1,0 +1,5 @@
+public int at() -> 0 {
+  int base = 100;
+  int sum(int n) -> 0 { [n > 0] # @ = n + @(n - 1); [n == 0] # @ = base; };
+  sum(3)!
+}

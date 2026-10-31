@@ -7,13 +7,13 @@
 FROM --platform=linux/amd64 debian:trixie AS toolchain
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential g++-multilib flex libfl-dev bison yasm perl python3 \
-      curl ca-certificates bzip2 \
+      bzip2 \
     && rm -rf /var/lib/apt/lists/*
-ARG WIKI=https://robots.hlt.inesc-id.pt/w/pt/images
 WORKDIR /opt
-RUN curl -fsSL -o cdk.tar.bz2 $WIKI/5/5f/Libcdk21-202605161833.tar.bz2 \
- && curl -fsSL -o rts.tar.bz2 $WIKI/3/39/Librts7-202605092235.tar.bz2 \
- && echo "8cdc0e726eea9b89246f94036cf8c2dc4025a331c7170028c9f111633bfd878d  cdk.tar.bz2" | sha256sum -c \
+# CDK21 and RTS7 are vendored (see vendor/README.md)
+COPY vendor/Libcdk21-202605161833.tar.bz2 cdk.tar.bz2
+COPY vendor/Librts7-202605092235.tar.bz2 rts.tar.bz2
+RUN echo "8cdc0e726eea9b89246f94036cf8c2dc4025a331c7170028c9f111633bfd878d  cdk.tar.bz2" | sha256sum -c \
  && echo "e89a80ad31630396f14ddf1dccfbff8efd9002985b63cb3692759aaabc670bc0  rts.tar.bz2" | sha256sum -c \
  && tar xjf cdk.tar.bz2 && tar xjf rts.tar.bz2
 # skip the documentation (doxygen) step

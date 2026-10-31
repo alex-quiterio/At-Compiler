@@ -1,0 +1,6 @@
+public int at() -> 0 {
+  int x = 5;
+  int a() { @ = x + 1; };
+  int b() { @ = a() * 2; };
+  b()!
+}

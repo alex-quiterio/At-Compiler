@@ -1,0 +1,2 @@
+int printi(int x) { @ = x * 2; }
+public int at() -> 0 { printi(4)! }

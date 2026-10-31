@@ -1,0 +1,7 @@
+public int at() -> 0 {
+  int x;
+  real y;
+  x = @;
+  y = @;
+  x + 1! ","! y * 2!
+}

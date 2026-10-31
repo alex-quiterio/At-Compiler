@@ -1,0 +1,10 @@
+int n = 0;
+int bump() { n = n + 1; @ = 1; }
+public int at() -> 0 {
+  0 && bump()!
+  1 || bump()!
+  2 && 3!
+  0 || 5!
+  ~0! ~7!
+  n!
+}

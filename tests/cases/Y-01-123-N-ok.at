@@ -1,0 +1,8 @@
+public int at() -> 0 {
+  int k = 10;
+  int g(int n) {
+    int h() { @ = n + k; };
+    @ = h() * 2;
+  };
+  g(1)!
+}

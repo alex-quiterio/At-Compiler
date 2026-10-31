@@ -1,0 +1,4 @@
+real half(real x) { @ = x / 2; }
+public int at() -> 0 {
+  half(5)! ","! half(1) * 4!
+}

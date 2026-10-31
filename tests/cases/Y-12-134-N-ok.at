@@ -1,0 +1,5 @@
+int f() -> 1 << { int x = 2; }
+{ x = x + 1; return }
+{ x = 4; }
+>> { @ = x * 10; return @ = 0; }
+public int at() -> 0 { f()! }

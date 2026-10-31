@@ -21,8 +21,8 @@ compiler driver and the Postfix code emitter.
 | yasm | any, `elf32` output |
 | g++ (C++23, multilib), Python 3, GNU make | |
 
-The easiest route is Docker. The `Dockerfile` downloads CDK21 and RTS7 from
-the course wiki (checking their SHA-256), builds them, builds the compiler
+The easiest route is Docker. The `Dockerfile` builds CDK21 and RTS7 from the
+copies in `vendor/` (checking their SHA-256), builds the compiler
 and runs the tests; the build fails if a test fails. RTS7 is 32-bit x86, so
 the image is `linux/amd64` (it also works, slowly, under emulation on ARM).
 
@@ -62,8 +62,12 @@ Functions declared with `use` and not defined in the file are external.
 
 ## Tests
 
-`tests/cases/` holds 122 programs and `tests/expected/` holds the output each
-one should print, from the course's reference test suite.
+`tests/cases/` holds the test programs and `tests/expected/` the output each
+one should print. Cases A-01 to W-03 (122) are the course's reference test
+suite; the Y cases were added with the port, for nested functions and static
+links, power, conditional chains, reals, short-circuit logic, precedence,
+sections, input, pointers, renamed RTS names and default arguments. A program
+that reads input gets `tests/input/NAME.in` on stdin.
 
 ```sh
 tests/run.sh                 # all of them
@@ -133,6 +137,7 @@ targets/
 examples/                    sample programs
 tests/                       test programs, expected output, runner
 Dockerfile                   toolchain, build and tests
+vendor/                      CDK21 and RTS7 source archives (GPLv3)
 ```
 
 ### Code generation notes
