@@ -1,0 +1,15 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The image builds CDK21 and RTS7, then the compiler, and runs
+      # tests/run.sh; the build fails if any test fails.
+      - name: Build and test
+        run: docker build -t at .

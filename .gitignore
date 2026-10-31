@@ -1,12 +1,11 @@
-# Build output
+# build products
+/at
 *.o
-at
-AtScanner.cpp
-AtParser.tab.[ch]
-AtParser.output
+*.tab.[ch]
+at_parser.output
+at_scanner.cpp
+.auto/
 .makedeps
-
-# Test run output
 tests/out/
 
 # Doxygen

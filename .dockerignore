@@ -1,0 +1,9 @@
+.git
+.github
+.auto
+*.o
+*.tab.[ch]
+at_parser.output
+at_scanner.cpp
+/at
+tests/out

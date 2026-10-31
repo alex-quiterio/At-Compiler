@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 #
 # Compile, link and run every program in tests/cases, then compare its output
-# with tests/expected. Newlines are ignored in the comparison, as the course
-# reference outputs were produced that way.
+# with tests/expected. Whitespace is ignored in the comparison: the course
+# reference outputs are not exact about it (C-01 expects " 0", A-07 expects
+# "X Y Z" where the program prints "X \n Y \n Z \n").
 #
 # Usage: tests/run.sh [NAME...]     e.g. tests/run.sh A-01-1-N-ok B-03-11-N-ok
 #
-# Needs the compiler built (make), yasm, and the CDK runtime library (librts).
+# Needs the compiler built (make), yasm, and the RTS7 runtime library (librts).
 
 set -u
 
@@ -38,7 +39,7 @@ for name in "${names[@]}"; do
      yasm -felf -o "$obj" "$asm" &&
      ld -m elf_i386 -o "$bin" "$obj" -lrts &&
      "$bin" > "$OUT/$name.out" &&
-     [ "$(tr -d '\n' < "$OUT/$name.out")" = "$(tr -d '\n' < "$EXPECTED/$name.out")" ]
+     [ "$(tr -d '[:space:]' < "$OUT/$name.out")" = "$(tr -d '[:space:]' < "$EXPECTED/$name.out")" ]
   then
     pass=$((pass + 1))
   else
