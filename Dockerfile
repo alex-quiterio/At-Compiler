@@ -21,8 +21,13 @@ RUN echo "8cdc0e726eea9b89246f94036cf8c2dc4025a331c7170028c9f111633bfd878d  cdk.
 RUN cd libcdk21-* && touch doc/.docsdone && make -j"$(nproc)" install ROOT=
 RUN cd librts7-* && make -j"$(nproc)" install PREFIX=
 
-FROM toolchain
+# the compiler and the examples ("docker build --target build" stops here)
+FROM toolchain AS build
 WORKDIR /src
 COPY . .
 RUN make clean && make -j"$(nproc)" && install -m 755 build/at /usr/local/bin/at
-RUN tests/run.sh && make examples
+RUN make examples
+
+# the default target also runs the tests, and fails if one fails
+FROM build AS test
+RUN tests/run.sh

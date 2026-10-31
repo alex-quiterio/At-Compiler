@@ -9,7 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # The image builds CDK21 and RTS7, then the compiler, and runs
-      # tests/run.sh; the build fails if any test fails.
-      - name: Build and test
-        run: docker build -t at .
+
+      # CDK21 and RTS7 from vendor/, then the compiler and the examples
+      - name: Build
+        run: docker build --target build -t at .
+
+      - name: Test
+        run: |
+          docker run --rm -v "$RUNNER_TEMP:/report" -e REPORT=/report/tests.md at tests/run.sh
+
+      - name: Publish the test report
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/tests.md" ]; then
+            cat "$RUNNER_TEMP/tests.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ❌ No test report (the build or the test run failed early)" >> "$GITHUB_STEP_SUMMARY"
+          fi

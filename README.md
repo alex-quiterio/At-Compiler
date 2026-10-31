@@ -166,7 +166,7 @@ tests/
 vendor/                   CDK21 and RTS7 source archives (GPLv3)
 build/                    everything generated (git-ignored), incl. build/at
 Dockerfile                toolchain, build, tests and examples
-.github/workflows/        CI: the Docker build on every push
+.github/workflows/        CI: build, test, publish the test report
 ```
 
 ## Building without Docker
@@ -193,7 +193,12 @@ and a `do_..._node` method in each visitor under `src/targets/`.
 tests/run.sh                 # all of them
 tests/run.sh P-01-100-N-ok   # just one
 AT=/path/to/at tests/run.sh  # test another binary
+REPORT=tests.md tests/run.sh # also write a Markdown report
 ```
+
+CI publishes that report in the summary of each GitHub Actions run, with a
+pass count, the expected and actual output of any failure, and every test's
+output.
 
 Each case is compiled, assembled, linked and run in `tests/out/`, and its
 output is compared with `tests/expected/`, ignoring whitespace (the
