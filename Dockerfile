@@ -1,4 +1,5 @@
-# Builds CDK21 and RTS7, then the At compiler, and runs the test suite:
+# Builds CDK21 and RTS7, then the At compiler; runs the test suite and
+# builds the examples:
 #
 #   docker build -t at .                     # fails if any test fails
 #   docker run --rm -v "$PWD":/w -w /w at at prog.at   # use the compiler
@@ -23,5 +24,5 @@ RUN cd librts7-* && make -j"$(nproc)" install PREFIX=
 FROM toolchain
 WORKDIR /src
 COPY . .
-RUN make clean && make -j"$(nproc)" && install -m 755 at /usr/local/bin/at
-RUN tests/run.sh
+RUN make clean && make -j"$(nproc)" && install -m 755 build/at /usr/local/bin/at
+RUN tests/run.sh && make examples

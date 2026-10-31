@@ -1,11 +1,5 @@
-# build products
-/at
-*.o
-*.tab.[ch]
-at_parser.output
-at_scanner.cpp
-.auto/
-.makedeps
+# everything generated
+/build/
 tests/out/
 
 # Doxygen

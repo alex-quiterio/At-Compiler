@@ -1,0 +1,14 @@
+// Functions inside functions use the enclosing function's variables.
+// When an inner name hides one, "@.x" is x one level up.
+public int at() -> 0 {
+  int total = 0;
+  int x = 100;
+  void add(int x) {
+    total = total + x;
+    @.x = @.x - x;
+  };
+  add(1);
+  add(2);
+  add(3);
+  "total = "! total! ", x = "! x!!
+}

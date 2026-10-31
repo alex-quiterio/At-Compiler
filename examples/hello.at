@@ -1,4 +1,4 @@
-public void at()
-{
-  10<3!!
+// "!" prints, "!!" prints and starts a new line.
+public int at() -> 0 {
+  "Hello, At!"!!
 }

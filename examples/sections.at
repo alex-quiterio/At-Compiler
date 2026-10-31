@@ -1,0 +1,13 @@
+// A body in sections. "<< {}" runs first and its variables are visible
+// everywhere; "(c) {}" runs when c holds and goes on; "[c] {}" skips the
+// remaining sections when it runs; ">> {}" always runs last.
+public int at() -> 0 << {
+  int n = 7;
+  "checking "! n!!
+}
+[n < 0] { "negative"!! }
+(n % 2 == 0) { "even"!! }
+(n % 2 == 1) { "odd"!! }
+[n > 5] { "big"!! }
+{ "never printed: the exclusive section above ran"!! }
+>> { "done"!! }

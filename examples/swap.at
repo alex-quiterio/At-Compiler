@@ -1,0 +1,13 @@
+// Pointers. "x?" is the address of x, and p[0] is what p points to.
+void swap(<int> a, <int> b) {
+  int t = a[0];
+  a[0] = b[0];
+  b[0] = t;
+}
+
+public int at() -> 0 {
+  int x = 1;
+  int y = 2;
+  swap(x?, y?);
+  "x = "! x! ", y = "! y!!
+}

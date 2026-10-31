@@ -1,0 +1,11 @@
+// Recursion. "-> 1" is the default return value, "@" is the return slot
+// and "@(...)" calls the current function.
+int factorial(int n) -> 1 {
+  [n > 1] # @ = n * @(n - 1);
+}
+
+public int at() -> 0 {
+  [int i = 0; i <= 10; i = i + 1] {
+    i! "! = "! factorial(i)!!
+  }
+}

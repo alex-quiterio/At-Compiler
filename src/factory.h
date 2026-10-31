@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <cdk/yy_factory.h>
-#include "at_scanner.h"
+#include "syntax/at_scanner.h"
 
 namespace at {
 

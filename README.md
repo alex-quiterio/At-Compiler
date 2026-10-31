@@ -1,157 +1,212 @@
-# At compiler
+# At
 
-A compiler for **At**, a small imperative teaching language, written for the
-Compilers course at Instituto Superior Técnico (2010/11) and ported in 2026
-to the current course toolchain. It reads an `.at` source file and emits
-32-bit x86 assembly (NASM syntax). You assemble that with yasm and link it
-against the course runtime library, RTS7 (`librts`).
+[![tests](https://github.com/alex-quiterio/At-Compiler/actions/workflows/tests.yml/badge.svg)](https://github.com/alex-quiterio/At-Compiler/actions/workflows/tests.yml)
 
-The front end is Flex and GNU Bison. The back end is built on **CDK21**, the
-course's Compiler Development Kit, which provides the AST base classes, the
-compiler driver and the Postfix code emitter.
+**At** is a small imperative language with an unusual taste for symbols: `@`
+is the return value, `!` prints, `#` allocates, `?` takes an address, and a
+function body can be cut into guarded sections. This is its compiler. It
+turns `.at` files into 32-bit x86 assembly.
 
-## Requirements
+It was written in 2010/11 for the Compilers course at Instituto Superior
+Técnico, and ported in 2026 to the course's current toolchain (CDK21 and
+RTS7). It passes all 122 programs of the course's reference test suite,
+plus 17 more of its own.
 
-| Tool | Version used |
-|------|--------------|
-| CDK | 21 (`libcdk`, headers in `<cdk/...>`, the `cdk` script) |
-| RTS | 7 (`librts`) |
-| GNU Flex, `libfl-dev` | 2.6 |
-| GNU Bison | 3.8 |
-| yasm | any, `elf32` output |
-| g++ (C++23, multilib), Python 3, GNU make | |
+```at
+// FizzBuzz: consecutive "[c] ? i" form an else-if ladder, ": i" closes it
+public int at() -> 0 {
+  [int i = 1; i <= 15; i = i + 1] {
+    [i % 15 == 0] ? "FizzBuzz"!!
+    [i % 3 == 0] ? "Fizz"!!
+    [i % 5 == 0] ? "Buzz"!!
+    : i!!
+  }
+}
+```
 
-The easiest route is Docker. The `Dockerfile` builds CDK21 and RTS7 from the
-copies in `vendor/` (checking their SHA-256), builds the compiler
-and runs the tests; the build fails if a test fails. RTS7 is 32-bit x86, so
-the image is `linux/amd64` (it also works, slowly, under emulation on ARM).
+## Quick start
+
+All you need is Docker. The image builds the toolchain from `vendor/`,
+builds the compiler, runs every test and builds the examples:
 
 ```sh
 docker build -t at .
-docker run --rm -v "$PWD":/w -w /w at at examples/hello.at
+docker run --rm -v "$PWD":/w -w /w at sh -c '
+  at examples/fizzbuzz.at &&
+  yasm -felf -o fizzbuzz.o examples/fizzbuzz.asm &&
+  ld -m elf_i386 -o fizzbuzz fizzbuzz.o -lrts &&
+  ./fizzbuzz'
 ```
 
-GitHub Actions runs the same build on every push (`.github/workflows/tests.yml`).
+RTS7 is 32-bit x86, so the image is `linux/amd64`. It also runs on ARM Macs
+under emulation, just more slowly.
 
-## Building
+## A tour of the language
+
+| You write | It means |
+|-----------|----------|
+| `public int at() -> 0 { ... }` | the entry point; `-> 0` is the default return value |
+| `x!` / `x!!` | print `x` / print it and a newline |
+| `@ = x + 1;` | set the return value |
+| `@(n - 1)` | call the current function recursively |
+| `x = @;` | read a number from the input (a real when `x` is real) |
+| `<int> p; p = #n;` | a pointer, pointing at `n` ints reserved on the stack |
+| `p[i]`, `x?` | indexing, and the address of `x` |
+| `[c] # i` | if |
+| `[c] ? i : j` | if-else; `[c1] ? i1 [c2] ? i2 ... : j` chains |
+| `[int i = 0; i < n; i = i + 1] i` | for loop; `next` continues, `stop` breaks |
+| `@.x`, `@.@` | `x` / the return value of the enclosing function |
+| `use int f(int n)` | a function defined in another file (or later in this one) |
+| `"a" 'b' 10` | adjacent literals join into one string: `"ab\n"` |
+| `6k2`, `3u1` | 6.2E3, 3.1E-6: SI suffixes y z a f p n u m k M G T P E Z Y |
+
+Types are `int`, `real`, `string`, `void` and pointers `<T>`; qualifiers are
+`public`, `use` and `const`. Integers can be written in decimal, octal
+(`017`), hex (`0x1F`) or binary (`0b101`). `~` is logical not and `^` is
+integer power. Operator precedence is C's, from loosest: `=`, `||`, `&&`,
+`== !=`, `< > <= >=`, `+ -`, `* / %`, unary `- + ~ #`, then `^`.
+
+### Bodies in sections
+
+A function body can be split into sections, which is what makes At unusual:
+
+```at
+public int at() -> 0 << {          // runs first; its variables are visible everywhere
+  int n = 7;
+}
+[n < 0]      { "negative"!! }      // exclusive: when it runs, skip the remaining sections
+(n % 2 == 1) { "odd"!! }           // inclusive: run if the condition holds, then go on
+{ "always"!! }                     // inclusive, no condition
+>> { "done"!! }                    // final: always runs last
+```
+
+`return` jumps to the final section, or leaves the function from inside it.
+
+### Functions inside functions
+
+```at
+public int at() -> 0 {
+  int total = 0;
+  int x = 100;
+  void add(int x) { total = total + x; @.x = @.x - x; };
+  add(1); add(2); add(3);
+  "total = "! total! ", x = "! x!!     // total = 6, x = 94
+}
+```
+
+## Examples
+
+`examples/` holds programs that show the language off. `make examples`
+builds each one into `build/examples/`.
+
+| Program | Shows |
+|---------|-------|
+| [`hello.at`](examples/hello.at) | printing |
+| [`fizzbuzz.at`](examples/fizzbuzz.at) | loops and else-if ladders |
+| [`factorial.at`](examples/factorial.at) | recursion with `@(...)` and default return values |
+| [`primes.at`](examples/primes.at) | a sieve in a stack array (`#n`), `next` |
+| [`swap.at`](examples/swap.at) | pointers and addresses |
+| [`nested.at`](examples/nested.at) | nested functions and `@.x` |
+| [`sections.at`](examples/sections.at) | bodies in sections |
+| [`sqrt.at`](examples/sqrt.at) | reals and int-to-real conversion (Newton's method) |
+| [`sum.at`](examples/sum.at) | reading input with `@` |
+
+## How it works
+
+```mermaid
+flowchart LR
+  A[".at source"] --> B["scanner<br/>(Flex)"] --> C["parser<br/>(Bison)"] --> D["AST"]
+  D --> E["type checker"] --> F["Postfix writer"] --> G[".asm"]
+  G --> H["yasm + ld<br/>with librts"] --> I["32-bit executable"]
+```
+
+The front end is Flex and Bison. The back end is built on **CDK21**, the
+course's Compiler Development Kit: it provides the AST base classes, the
+compiler driver and the Postfix emitter, which writes x86 assembly. The
+program links against **RTS7**, the course runtime, for I/O and start-up.
+
+Some details of the generated code:
+
+- **Calls.** Arguments are pushed last first and start at `ebp+8`; the
+  caller removes them. Missing trailing arguments take their default
+  literals, converted to the parameter's type.
+- **Return values.** `@` is a local slot, initialized from `-> literal` (or
+  0). Reals come back in the FPU, everything else in `eax`.
+- **Nested functions** are emitted in place, behind a jump. Each one gets a
+  hidden first argument, the *static link* (its enclosing function's frame),
+  so it can reach enclosing variables at any depth, also when it recurses.
+- **`#n`** subtracts `n` elements from the stack pointer. The element type
+  comes from the pointer the result is assigned to.
+- **`^`** calls a small integer power routine, emitted once per file.
+- **Names.** `at` becomes `_main`. A top-level name defined in the file
+  that clashes with the RTS (`printi`, `argc`, `_main`, ...) or starts with
+  `_` gets an `_at_` prefix.
+
+## Project layout
+
+```
+src/
+  syntax/
+    at_scanner.l, .h      lexer (Flex C++ scanner)
+    at_parser.y           grammar and AST construction (Bison)
+  ast/                    AST nodes, one header each (namespace at)
+  targets/
+    basic_ast_visitor.h   base class of the visitors
+    symbol.h              symbols, and nested scopes that know function depth
+    type_checker.*        types expressions (driven by the code generator)
+    frame_size_calculator.*  bytes of locals in a function body
+    postfix_writer.*      code generation
+    postfix_target.*      registers the "asm" target with CDK
+  factory.*               registers the "at" language with CDK
+examples/                 sample programs
+tests/
+  cases/, expected/       test programs and their expected output
+  input/                  stdin for the tests that read
+  run.sh                  the test runner
+vendor/                   CDK21 and RTS7 source archives (GPLv3)
+build/                    everything generated (git-ignored), incl. build/at
+Dockerfile                toolchain, build, tests and examples
+.github/workflows/        CI: the Docker build on every push
+```
+
+## Building without Docker
+
+You need CDK21, RTS7, Flex with `libfl-dev`, Bison 3.8, yasm, g++ with
+multilib (C++23), Python 3 and GNU make. The archives in `vendor/` build
+with `make install`; see the `Dockerfile` for the exact steps.
 
 ```sh
-make                 # builds ./at
+make                 # builds build/at
 make ROOT=/opt/cdk   # if CDK lives under /opt/cdk/usr instead of /usr
-make check           # builds, then runs the tests
+make check           # runs the tests
+make examples        # builds the examples into build/examples/
 make clean
 ```
 
-`.auto/all_nodes.h` and `.auto/visitor_decls.h` are generated by `cdk ast`
-from the headers in `ast/`. A new node class only needs a header there and a
-`do_..._node` method in each visitor under `targets/`.
-
-## Running a program
-
-```sh
-./at examples/hello.at       # writes examples/hello.asm
-yasm -felf -o hello.o examples/hello.asm
-ld -m elf_i386 -o hello hello.o -lrts
-./hello
-```
-
-The function `at` is the program's entry point (it becomes `_main`). A
-top-level name defined in the file that clashes with the RTS (`printi`,
-`argc`, `_main`, ...) or starts with `_` is emitted with an `_at_` prefix.
-Functions declared with `use` and not defined in the file are external.
+`build/.auto/` holds the node declarations and visitor methods that
+`cdk ast` generates from `src/ast/`. A new node only needs a header there
+and a `do_..._node` method in each visitor under `src/targets/`.
 
 ## Tests
-
-`tests/cases/` holds the test programs and `tests/expected/` the output each
-one should print. Cases A-01 to W-03 (122) are the course's reference test
-suite; the Y cases were added with the port, for nested functions and static
-links, power, conditional chains, reals, short-circuit logic, precedence,
-sections, input, pointers, renamed RTS names and default arguments. A program
-that reads input gets `tests/input/NAME.in` on stdin.
 
 ```sh
 tests/run.sh                 # all of them
 tests/run.sh P-01-100-N-ok   # just one
+AT=/path/to/at tests/run.sh  # test another binary
 ```
 
-Each case is copied to `tests/out/`, then compiled, assembled, linked and run
-there. Its output is compared with the expected file, ignoring whitespace:
-the reference outputs are not exact about it (C-01 expects `" 0"`, A-07
-expects `"X Y Z"` where the program prints `"X \n Y \n Z \n"`). The script
-prints a pass count and lists any failures. Set `AT=/path/to/at` to test a
-different binary.
+Each case is compiled, assembled, linked and run in `tests/out/`, and its
+output is compared with `tests/expected/`, ignoring whitespace (the
+reference outputs are loose about it: C-01 expects `" 0"`). Cases A to W
+are the course's reference suite. The Y cases were added with the port and
+cover what that suite doesn't: static links, power, conditional chains,
+reals, short-circuit logic, precedence, sections, input, pointers, renamed
+RTS names and default arguments.
 
-## The language at a glance
+## History
 
-```at
-use int square(int n)                // declared here, defined elsewhere
-const public real ratio = 1k5;       // 1.5E3: SI suffixes y z a f p n u m k M G T P E Z Y
-
-public int at() -> 0 {               // entry point; "-> 0" is the default return value
-  <int> v = #3;                      // pointer type <T>; #n allocates n cells
-  [int i = 0; i < 3; i = i + 1]      // for loop: [init; condition; step]
-    v[i] = i ^ 2;
-  [v[2] == 4] ? "four"!! : "?"!!     // conditional; "!" prints, "!!" prints with a newline
-}
-```
-
-- Types: `int`, `real`, `string`, `void`, and pointers `<T>`.
-- Qualifiers: `public` (exported), `use` (imported), `const`.
-- Integer literals: decimal, octal (`017`), hex (`0x1F`), binary (`0b101`).
-- Adjacent strings, chars and integers are joined into one string:
-  `"a" 'b' 10` is `"ab\n"`.
-- `@` reads an integer (or a real, when assigned to a real) as an expression. Inside a function it also names the
-  return value (`@ = x + 1;`), `@(args)` calls the current function
-  recursively, and `@.x` reaches a variable of the enclosing function.
-- `x?` takes the address of `x`. `~` is logical not, `^` is power.
-- `next` and `stop` continue and break the innermost loop.
-- `[c] # i` is a plain if. `[c] ? i : j` is if-else, and consecutive
-  `[c1] ? i1 [c2] ? i2 ... : j` instructions chain into an else-if ladder.
-- Operator precedence is C's, from loosest: `=`, `||`, `&&`, `== !=`,
-  `< > <= >=`, `+ -`, `* / %`, unary `- + ~ #`, then `^` (right associative).
-- A function body can have an initial section `<< { }`, conditional sections
-  and a final section `>> { }`. `(cond) { }`, `() { }` and a bare `{ }` run
-  when the condition holds and go on to the next section; `[cond] { }` and
-  `[] { }` skip the remaining sections when they run. `return` jumps to the
-  final section, or leaves the function from inside it. Variables declared in
-  the initial section are visible in the whole body.
-- Functions can be defined inside functions and use the enclosing
-  function's variables.
-
-`at_scanner.l` and `at_parser.y` are the authoritative grammar.
-
-## Source layout
-
-```
-at_scanner.l, at_scanner.h   lexer (Flex C++ scanner class at_scanner)
-at_parser.y                  grammar and AST construction (Bison)
-factory.{h,cpp}              registers the "at" language with CDK
-ast/                         At-specific AST nodes (namespace at)
-targets/
-  basic_ast_visitor.h        base class of the visitors
-  symbol.h                   symbols, and the nested scopes used for "@.x"
-  type_checker.{h,cpp}       types expressions (called by the code generator)
-  frame_size_calculator.*    bytes of locals in a function body
-  postfix_writer.{h,cpp}     code generation through CDK's Postfix emitter
-  postfix_target.{h,cpp}     registers the "asm" target
-examples/                    sample programs
-tests/                       test programs, expected output, runner
-Dockerfile                   toolchain, build and tests
-vendor/                      CDK21 and RTS7 source archives (GPLv3)
-```
-
-### Code generation notes
-
-- Arguments are pushed last first and start at `ebp+8`; the caller removes
-  them. Missing trailing arguments take their default literals.
-- `@` is a local return slot, initialized from `-> literal` (or 0).
-- A function defined inside another one is emitted in place, behind a jump.
-  It gets a hidden first argument, the static link (its enclosing
-  function's `ebp`), so it can reach the enclosing variables through any
-  number of levels, also when it recurses.
-- `#n` reserves `n` elements on the stack (`ALLOC`) and takes its element
-  type from the pointer it is assigned to.
-- `^` calls a small integer power routine emitted once per file; a zero or
-  negative exponent gives 1.
-
-The 2010 CDK7 version of the compiler is on `main`'s history before the port.
+The original 2010 compiler targeted CDK7 with BYACC; it's in the history
+before the port (`0f83f7b`). The port rewrote it on CDK21: a new
+conflict-free grammar with C precedence, a new AST, and a new code
+generator. It also fixed the old one's bugs, among them a power operator
+that looped forever on a zero exponent.

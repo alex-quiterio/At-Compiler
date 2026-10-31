@@ -13,7 +13,7 @@ set -u
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
-AT="${AT:-$ROOT/at}"
+AT="${AT:-$ROOT/build/at}"
 CASES="$HERE/cases"
 EXPECTED="$HERE/expected"
 INPUT="$HERE/input"   # optional NAME.in, fed to the program on stdin

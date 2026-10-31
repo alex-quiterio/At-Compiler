@@ -1,0 +1,12 @@
+// Reals. Ints convert to reals in assignments, arguments and return values.
+real sqrt(real x) {
+  real guess = 1;
+  [int i = 0; i < 20; i = i + 1] guess = (guess + x / guess) / 2;
+  @ = guess;
+}
+
+public int at() -> 0 {
+  [int n = 1; n <= 5; n = n + 1] {
+    "sqrt("! n! ") = "! sqrt(n)!!
+  }
+}

@@ -1,0 +1,8 @@
+// Input. "@" as a value reads a number (one per line). Sums positive
+// numbers until something else, or the end of the input.
+public int at() -> 0 {
+  int sum = 0;
+  int n;
+  [n = @; n > 0; n = @] sum = sum + n;
+  "sum = "! sum!!
+}

@@ -1,4 +1,4 @@
-%option c++ prefix="at_scanner_" outfile="at_scanner.cpp"
+%option c++ prefix="at_scanner_"
 %option stack noyywrap yylineno 8bit
 %{
 // make relevant includes before including the parser's tab file

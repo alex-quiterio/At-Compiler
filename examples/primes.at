@@ -1,0 +1,14 @@
+// Sieve of Eratosthenes. "#n" reserves n elements on the stack; "next"
+// skips to the next loop iteration.
+public int at() -> 0 {
+  int n = 60;
+  <int> composite;
+  composite = #n;
+  [int i = 0; i < n; i = i + 1] composite[i] = 0;
+  [int i = 2; i < n; i = i + 1] {
+    [composite[i]] # next
+    i! " "!
+    [int j = i * i; j < n; j = j + i] composite[j] = 1;
+  }
+  ""!!
+}
