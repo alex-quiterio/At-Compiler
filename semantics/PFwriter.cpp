@@ -7,6 +7,11 @@
 #include "semantics/PointerType.h"
 #include "nodes/all.h"  // automatically generated
 
+// Function qualifiers are stored as the parser's token codes. These must
+// match tUSE and tPUBLIC in the byacc-generated AtParser.tab.h.
+static const int QUALIFIER_USE = 270;
+static const int QUALIFIER_PUBLIC = 271;
+
 //---------------------------------------------------------------------------
 //                     THIS IS THE EVALUATOR'S DEFINITION
 //---------------------------------------------------------------------------
@@ -228,8 +233,8 @@ void at::semantics::PFwriter::processRealIntExp
   int _select_operation = 0;
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     // CASE ONE = INT OP INT = INT
     if((node->left()->type()->name() == ExpressionType::TYPE_INT) 
     && (node->right()->type()->name() == ExpressionType::TYPE_INT))
@@ -392,8 +397,8 @@ void at::semantics::PFwriter::processExpression
   int _select_operation = 0;
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     // CASE ONE = INT OP INT = INT
     if((node->left()->type()->name() == ExpressionType::TYPE_INT) 
     && (node->right()->type()->name() == ExpressionType::TYPE_INT))
@@ -588,8 +593,8 @@ void at::semantics::PFwriter::processNEG
 {
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab,_nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab,_nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     node->argument()->accept(this, lvl);
     if(node->argument()->type()->name() == ExpressionType::TYPE_DOUBLE)
     {
@@ -614,8 +619,8 @@ void at::semantics::PFwriter::processPOWER
   int lbl1, lbl2;
   try 
   {
-      TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-      node->accept(tv, lvl);
+      TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+      node->accept(&tv,  lvl);
       
       node->right()->accept(this,lvl);
       node->left()->accept(this, lvl);
@@ -647,8 +652,8 @@ void at::semantics::PFwriter::processAND
     int lbl1, lbl2, lbl3;
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     
     node->left()->accept(this, lvl);
     _pf.JZ(mklbl(lbl1 = ++_lbl));
@@ -676,8 +681,8 @@ void at::semantics::PFwriter::processOR
     int lbl1, lbl2, lbl3;
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     
     node->left()->accept(this, lvl);
     _pf.JNZ(mklbl(lbl1 = ++_lbl));
@@ -703,8 +708,8 @@ void at::semantics::PFwriter::processMOD
 {
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     
     node->left()->accept(this, lvl);
     node->right()->accept(this, lvl);
@@ -723,8 +728,8 @@ void at::semantics::PFwriter::processNOT
 {
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     node->argument()->accept(this, lvl); 
     _pf.INT(0);
     _pf.EQ();
@@ -790,8 +795,8 @@ void at::semantics::PFwriter::processNestedVar
     int context = _lvltab - _nestlvl.size()-1;     
     try
     {   
-        TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-        node->accept(tv, lvl);
+        TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+        node->accept(&tv,  lvl);
         VariableSymbol* symb = (VariableSymbol*) _symtab.find(id,context);
         _pf.LOCAL(0);
         for(size_t i = 0; i < node->Nesting(); i++)
@@ -881,8 +886,8 @@ void at::semantics::PFwriter::processAtribNode
 {
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
      // determine the new value
     node->rvalue()->accept(this, lvl);   
     
@@ -995,8 +1000,8 @@ void at::semantics::PFwriter::processInputArgumentNode
     int off_set = _contextOffSet.top();
     try
     {
-        TypeValidator *tv = new TypeValidator(os(), _symtab,_nestlvl, &_lvltab);
-        node->accept(tv, lvl);
+        TypeValidator tv(os(), _symtab,_nestlvl, &_lvltab);
+        node->accept(&tv,  lvl);
         FunctionSymbol *fs = (FunctionSymbol*) _nestlvl.at(_nestlvl.size() - 1);
         if(!_symtab.insert(id,new VariableSymbol(node->type(),id,off_set, _nestlvl.size())))
         {
@@ -1087,9 +1092,9 @@ void at::semantics::PFwriter::processFunctionNode
      */
     _symtab.push();
     _lvltab++;
-    ArgumentCounter *Ac = new ArgumentCounter();
-    node->vars()->accept(Ac, lvl);
-    fs->SetSizeArgs(Ac->getArgsSize());
+    ArgumentCounter ac;
+    node->vars()->accept(&ac, lvl);
+    fs->SetSizeArgs(ac.getArgsSize());
 
     /*
      * Se a função for interna a uma outra função
@@ -1108,8 +1113,8 @@ void at::semantics::PFwriter::processFunctionNode
       /*
        * Teste ao retorno por omissão da função em causa
        */
-       TypeValidator *tv = new TypeValidator(os(), _symtab,_nestlvl, &_lvltab);        
-       node->accept(tv,lvl);
+       TypeValidator tv(os(), _symtab,_nestlvl, &_lvltab);        
+       node->accept(&tv, lvl);
     }
     catch(std::string s)
     {
@@ -1128,7 +1133,7 @@ void at::semantics::PFwriter::processFunctionNode
     _pf.TEXT();
     _pf.ALIGN();
     // funcao main (at)
-    if(id[0] == 'a' && id[1] == 't') 
+    if(std::string(id) == "at") 
     {
        _pf.GLOBL("_main", _pf.FUNC());
        _pf.LABEL("_main");
@@ -1137,18 +1142,18 @@ void at::semantics::PFwriter::processFunctionNode
     else
     {
         // se for public 
-       if(node->qualifier() == 271)
+       if(node->qualifier() == QUALIFIER_PUBLIC)
        _pf.GLOBL(fs->NasmName(), _pf.FUNC());
        _pf.LABEL(fs->NasmName());
     }
 
-    Ac->Reset();
+    ac.Reset();
     // Contador de variaveis locais 
-    node->accept(Ac,lvl);     
+    node->accept(&ac, lvl);     
     /* o tamanho de reserva = tamanho total das variaveis locais
      * mais o tamanho do tipo de retorno
      */
-    int size = Ac->getArgsSize() + node->type()->size();
+    int size = ac.getArgsSize() + node->type()->size();
     // OFF-SET a 0 para variavies locais
     _contextOffSet.top() = 0;
     _pf.ENTER(size); 
@@ -1252,9 +1257,9 @@ void at::semantics::PFwriter::processFunctionDeclNode
          * Contador do tamanho ocupado pelos Argumentos ou variavies
          * visitadas
          */
-        ArgumentCounter *Ac = new ArgumentCounter();
-        node->vars()->accept(Ac, lvl);
-        fs->SetSizeArgs(Ac->getArgsSize());
+        ArgumentCounter ac;
+        node->vars()->accept(&ac, lvl);
+        fs->SetSizeArgs(ac.getArgsSize());
 
         _contextOffSet.push(8);      
         node->vars()->accept(this,lvl); 
@@ -1266,9 +1271,9 @@ void at::semantics::PFwriter::processFunctionDeclNode
           /*
            * Teste ao retorno por omissão da função em causa
            */
-           TypeValidator *tv = new TypeValidator(os(), _symtab,_nestlvl, &_lvltab);        
-           node->accept(tv,lvl);
-           if(node->qualifier() == 270)
+           TypeValidator tv(os(), _symtab,_nestlvl, &_lvltab);        
+           node->accept(&tv, lvl);
+           if(node->qualifier() == QUALIFIER_USE)
            {
 
            }
@@ -1304,8 +1309,8 @@ void at::semantics::PFwriter::processDeclarationNode
             // Após a inserção faz um visit para etiquetar o lvalue e rvalue
             try 
             {
-                TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-                node->accept(tv, lvl);
+                TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+                node->accept(&tv,  lvl);
             }
             catch (std::string s) 
             {
@@ -1337,8 +1342,8 @@ void at::semantics::PFwriter::processDeclarationNode
         {   
              try 
              {
-                TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-                node->accept(tv, lvl);
+                TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+                node->accept(&tv,  lvl);
              }
              catch (std::string s) 
              {
@@ -1455,8 +1460,8 @@ void at::semantics::PFwriter::processBodyNode
 (at::node::BodyNode * const node, int lvl) 
 {        
       // The initial section is visible throughout the function
-      TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-      node->accept(tv, lvl);
+      TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+      node->accept(&tv,  lvl);
       
       _return_body.push(++_lbl);
       _return_func.push(++_lbl);
@@ -1493,8 +1498,8 @@ void at::semantics::PFwriter::processPrintNode
 {
   try 
   {
-    TypeValidator *tv =  new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
   }
   catch (std::string s) 
   {
@@ -1538,7 +1543,7 @@ void at::semantics::PFwriter::processForNode
   int lbl1;
   int lbl2 = ++_lbl;
   int lbl3 = ++_lbl;
-  TypeValidator* tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
+  TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
   //PUSH -> Context for Stop and Next instruction
   _contextSTOP.push(lbl2= ++_lbl);
   _contextNEXT.push(lbl3= ++_lbl);
@@ -1546,21 +1551,21 @@ void at::semantics::PFwriter::processForNode
   {
     if(node->type() == 1)
     {
-        node->init()->accept(tv, lvl);
+        node->init()->accept(&tv,  lvl);
         node->init()->accept(this, lvl);
     }
     else
     {
        node->init()->accept(this, lvl);
-       node->init()->accept(tv, lvl);
+       node->init()->accept(&tv,  lvl);
     }
     _pf.LABEL(mklbl(lbl1 = ++_lbl));
-    node->condition()->accept(tv, lvl);
+    node->condition()->accept(&tv,  lvl);
     node->condition()->accept(this, lvl);
     _pf.JZ(mklbl(lbl2));
     node->block()->accept(this, lvl + 2);
     _pf.LABEL(mklbl(lbl3));
-    node->incrmt()->accept(tv, lvl);
+    node->incrmt()->accept(&tv,  lvl);
     node->incrmt()->accept(this, lvl);
     if(node->incrmt()->type()->name() == ExpressionType::TYPE_DOUBLE)
         _pf.TRASH(8);
@@ -1588,8 +1593,8 @@ void at::semantics::PFwriter::processIfNode
   int lbl1;
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     node->condition()->accept(this, lvl);
     _pf.JZ(mklbl(lbl1 = ++_lbl));
     node->block()->accept(this, lvl + 2);
@@ -1609,8 +1614,8 @@ void at::semantics::PFwriter::processInclusiveNode
   int lbl1;
   try 
   {
-    TypeValidator *tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-    node->accept(tv, lvl);
+    TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+    node->accept(&tv,  lvl);
     node->condition()->accept(this, lvl);
     _pf.JZ(mklbl(lbl1=++_lbl));
     node->thenblock()->accept(this, lvl + 2);
@@ -1631,8 +1636,8 @@ void at::semantics::PFwriter::processIfElseNode
   int lbl1, lbl2;
   try 
   {
-        TypeValidator* tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-        node->accept(tv, lvl);
+        TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+        node->accept(&tv,  lvl);
 
         node->condition()->accept(this, lvl);
         _pf.JZ(mklbl(lbl1 = ++_lbl));
@@ -1655,8 +1660,8 @@ void at::semantics::PFwriter::processTrashNode
 {
   try 
   {
-        TypeValidator* tv = new TypeValidator(os(), _symtab, _nestlvl, &_lvltab);
-        node->accept(tv, lvl);
+        TypeValidator tv(os(), _symtab, _nestlvl, &_lvltab);
+        node->accept(&tv,  lvl);
         
         node->expression()->accept(this, lvl);
         if(node->expression()->type()->name() == ExpressionType::TYPE_DOUBLE)

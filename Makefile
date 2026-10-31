@@ -20,7 +20,10 @@ CXXFLAGS = -ansi -DYYDEBUG=1 -Wall -ggdb -Isemantics -I. -I$(CDK_INC_DIR) -I$(CD
 LDFLAGS  = -L$(CDK_LIB_DIR) -lcdk
 COMPILER = at
 
-SRC_CPP = $(wildcard nodes/**/*.cpp) $(wildcard semantics/*.cpp) $(wildcard ./*.cpp)
+# Make's wildcard has no "**": list each level explicitly. The generated
+# scanner is linked separately (see $(COMPILER) below), so leave it out here.
+SRC_CPP = $(wildcard nodes/*.cpp nodes/expression/*.cpp semantics/*.cpp) \
+          $(filter-out $(L_NAME).cpp, $(wildcard *.cpp))
 OFILES  = $(SRC_CPP:%.cpp=%.o)
 
 #---------------------------------------------------------------

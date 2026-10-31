@@ -1,0 +1,13 @@
+# Build output
+*.o
+at
+AtScanner.cpp
+AtParser.tab.[ch]
+AtParser.output
+.makedeps
+
+# Test run output
+tests/out/
+
+# Doxygen
+doc/

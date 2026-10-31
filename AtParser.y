@@ -26,10 +26,12 @@
 };
 
 %token <i> tINTEGER
-%token <s> tIDENTIFIER tSTRING tCHAR tTEXT
+%token <s> tIDENTIFIER
+%token tSTRING
+%token <s> tCHAR tTEXT
 %token <r> tREAL
 %token tPRINT tRETURN tFLOAT tFUNCTION tOPENBODY
-%token tSTOP tNEXT tUSE tPUBLIC tSTRING tCLOSEBODY
+%token tSTOP tNEXT tUSE tPUBLIC tCLOSEBODY
 %token tINT tVOID tCONST
 %nonassoc tIFX
 %nonassoc '[' '{' '(' 
@@ -192,7 +194,7 @@ type	: tINT		{$$ = new ExpressionType(4,ExpressionType::TYPE_INT);}
 	;
 literal	: tINTEGER      { $$ = new cdk::node::expression::Integer(LINE, $1); }
 	| tREAL		{ $$ = new cdk::node::expression::Double(LINE, $1);}
-	| tSTRING	{ $$ = new cdk::node::expression::String(LINE, $1); }
+	| tTEXT	{ $$ = new cdk::node::expression::String(LINE, $1); }
 	;
 //===========================================================================
 //---------         AT - SPECIFIC SECTION FUNCTIONS              ------------
