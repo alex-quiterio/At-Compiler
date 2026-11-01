@@ -1,11 +1,37 @@
-# At
+<div align="center">
+
+```
+    ___   __
+   /   | / /_
+  / /| |/ __/      a tiny language that speaks in symbols
+ / ___ / /_        and compiles to 32-bit x86
+/_/  |_\__/
+```
 
 [![tests](https://github.com/alex-quiterio/At-Compiler/actions/workflows/tests.yml/badge.svg)](https://github.com/alex-quiterio/At-Compiler/actions/workflows/tests.yml)
+![139 tests](https://img.shields.io/badge/tests-139%2F139-brightgreen)
+![C++23](https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white)
+![x86](https://img.shields.io/badge/target-i386-6E4C13)
+![Docker](https://img.shields.io/badge/runs%20in-Docker-2496ED?logo=docker&logoColor=white)
+
+</div>
 
 **At** is a small imperative language with an unusual taste for symbols: `@`
 is the return value, `!` prints, `#` allocates, `?` takes an address, and a
 function body can be cut into guarded sections. This is its compiler. It
 turns `.at` files into 32-bit x86 assembly.
+
+### The symbols at a glance
+
+| | | |
+|:-:|---|---|
+| **`@`** | the return value, a recursive call, or a read from input | `@ = n * @(n - 1);` |
+| **`!`** | print (`!!` adds a newline) | `"hi"!!` |
+| **`#`** | allocate on the stack, or *if* | `p = #10;` · `[x > 0] # "pos"!!` |
+| **`?`** | address of, or *if-else* | `p = x?;` · `[a] ? x : y` |
+| **`~`** | logical not | `[~done] # ...` |
+| **`^`** | integer power | `2 ^ 10` |
+| **`<< [] () >>`** | the sections of a body: first, exclusive, inclusive, final | see [below](#bodies-in-sections) |
 
 It was written in 2010/11 for the Compilers course at Instituto Superior
 Técnico, and ported in 2026 to the course's current toolchain (CDK21 and
@@ -29,8 +55,20 @@ public int at() -> 0 {
 All you need is Docker. The image builds the toolchain from `vendor/`,
 builds the compiler, runs every test and builds the examples:
 
+```console
+$ docker build -t at .
+$ docker run --rm at build/examples/factorial
+0! = 1
+1! = 1
+2! = 2
+3! = 6
+...
+10! = 3628800
+```
+
+To compile your own program:
+
 ```sh
-docker build -t at .
 docker run --rm -v "$PWD":/w -w /w at sh -c '
   at examples/fizzbuzz.at &&
   yasm -felf -o fizzbuzz.o examples/fizzbuzz.asm &&
@@ -125,6 +163,57 @@ course's Compiler Development Kit: it provides the AST base classes, the
 compiler driver and the Postfix emitter, which writes x86 assembly. The
 program links against **RTS7**, the course runtime, for I/O and start-up.
 
+<details>
+<summary><b>What the output looks like</b>: one line of At, and the assembly it becomes</summary>
+
+```at
+public int square(int n) -> 0 { @ = n * n; }
+```
+
+```nasm
+square:
+	push	ebp
+	mov	ebp, esp
+	sub	esp, 4              ; room for @
+	push	dword 0             ; @ = 0, from "-> 0"
+	lea	eax, [ebp+-4]
+	push	eax
+	pop	ecx
+	pop	eax
+	mov	[ecx], eax
+	lea	eax, [ebp+8]        ; n
+	push	eax
+	pop	eax
+	push	dword [eax]
+	lea	eax, [ebp+8]        ; n again
+	push	eax
+	pop	eax
+	push	dword [eax]
+	pop	eax
+	imul	dword eax, [esp]    ; n * n
+	mov	[esp], eax
+	push	dword [esp]
+	lea	eax, [ebp+-4]       ; store it in @
+	push	eax
+	pop	ecx
+	pop	eax
+	mov	[ecx], eax
+	add	esp, 4
+_L1:
+	lea	eax, [ebp+-4]       ; return @
+	push	eax
+	pop	eax
+	push	dword [eax]
+	pop	eax
+	leave
+	ret
+```
+
+The Postfix emitter thinks in a stack machine, which is why every value
+takes a trip through `push` and `pop`. Nobody said it had to be fast.
+
+</details>
+
 Some details of the generated code:
 
 - **Calls.** Arguments are pushed last first and start at `ebp+8`; the
@@ -141,6 +230,18 @@ Some details of the generated code:
 - **Names.** `at` becomes `_main`. A top-level name defined in the file
   that clashes with the RTS (`printi`, `argc`, `_main`, ...) or starts with
   `_` gets an `_at_` prefix.
+
+## By the numbers
+
+| | |
+|---|---|
+| ~2,600 | lines of compiler: scanner, grammar, AST and visitors |
+| 22 | AST node types |
+| 0 | grammar conflicts (down from 10 before the port) |
+| 139 | test programs, all passing on every push |
+| 9 | example programs |
+| 2 | vendored archives, so the toolchain builds offline forever |
+| 15 | years between writing it and porting it |
 
 ## Project layout
 
