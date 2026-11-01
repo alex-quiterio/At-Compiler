@@ -1,12 +1,8 @@
 <div align="center">
 
-```
-    ___   __
-   /   | / /_
-  / /| |/ __/      a tiny language that speaks in symbols
- / ___ / /_        and compiles to 32-bit x86
-/_/  |_\__/
-```
+# @ At
+
+*A tiny language that speaks in symbols and compiles to 32-bit x86*
 
 [![tests](https://github.com/alex-quiterio/At-Compiler/actions/workflows/tests.yml/badge.svg)](https://github.com/alex-quiterio/At-Compiler/actions/workflows/tests.yml)
 ![139 tests](https://img.shields.io/badge/tests-139%2F139-brightgreen)
