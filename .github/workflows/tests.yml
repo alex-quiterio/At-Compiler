@@ -16,13 +16,19 @@ jobs:
 
       - name: Test
         run: |
-          docker run --rm -v "$RUNNER_TEMP:/report" -e REPORT=/report/tests.md at tests/run.sh
+          mkdir -p "$RUNNER_TEMP/report"
+          docker run --name at-tests -e REPORT=/tmp/tests.md at tests/run.sh || status=$?
+          docker cp at-tests:/tmp/tests.md "$RUNNER_TEMP/report/tests.md" || true
+          docker rm at-tests > /dev/null
+          exit ${status:-0}
 
+      # the job summary, shown on the run's page below the job graph
       - name: Publish the test report
         if: always()
         run: |
-          if [ -f "$RUNNER_TEMP/tests.md" ]; then
-            cat "$RUNNER_TEMP/tests.md" >> "$GITHUB_STEP_SUMMARY"
+          report="$RUNNER_TEMP/report/tests.md"
+          if [ -s "$report" ]; then
+            cat "$report" | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            echo "## ❌ No test report (the build or the test run failed early)" >> "$GITHUB_STEP_SUMMARY"
+            echo "## ❌ No test report (the build or the test run failed early)" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
